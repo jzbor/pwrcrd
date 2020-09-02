@@ -25,7 +25,7 @@ class Importeur(chord_format.Importeur):
         for i in range(len(lines)):
             lines[i] = lines[i].replace('\n', '')
 
-        encoded_song = song.EncodedSong(lines[0], lines[1], url)
+        encoded_song = song.ImportedSong(lines[0], lines[1], url)
         lines = lines[2:]
 
         # loop over all lines in file
@@ -61,7 +61,7 @@ class Exporteur(chord_format.Exporteur):
     def __init__(self):
         pass
 
-    def export(self, song: song.EncodedSong):
+    def export(self, song: song.ImportedSong):
         """Return decoded string"""
         assert len(song.chords) > 0
 

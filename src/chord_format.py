@@ -33,7 +33,7 @@ class Exporteur:
     def __init__(self):
         pass
 
-    def export(self, song: song.EncodedSong):
+    def export(self, song: song.ImportedSong):
         """Return decoded string"""
         pass
 
