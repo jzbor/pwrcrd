@@ -79,11 +79,10 @@ def parse_args():
                         nargs=1, dest='output_path')
     parser.add_argument('-f', '--force', help='overwrite existing files',
                         action='store_true')
-    # Following args should be defined:
-    # * output formats to generate/keep
-    # * input file/url/format
-    # * overwrite existing files
+    # @TODO Following functions to be implemented
+    # * delete source files
     # * verbosity
+    # * generate pdf (via latex or chord pro)
     return parser.parse_args()
 
 
