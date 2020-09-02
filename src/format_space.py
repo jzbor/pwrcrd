@@ -1,24 +1,15 @@
-import format
+import chord_format
 import os
 import os.path
-import re
 import song
-import format_prochord
 
-class Format(format.Format):
-    file_endings = ['txt']
-    identifier = 'space'
 
-    def __init__(self):
-        self.encoder = Encoder()
-        self.decoder = Decoder()
-
-class Encoder(format.Encoder):
-    """Encoder to parse the external format into the internal data structure."""
+class Importeur(chord_format.Importeur):
+    """Importeur to parse the external format into the internal data structure."""
     def __init__(self):
         pass
 
-    def encode(self, url):
+    def load(self, url):
         """Return an encoded song."""
         # @TODO Add song title and author
         if not os.path.isfile(url):
@@ -65,12 +56,12 @@ class Encoder(format.Encoder):
         return encoded_song
 
 
-class Decoder(format.Decoder):
-    """Decoder to export internal data structure to format"""
+class Exporteur(chord_format.Exporteur):
+    """Exporteur to export internal data structure to format"""
     def __init__(self):
         pass
 
-    def decode(self, song: song.EncodedSong):
+    def export(self, song: song.EncodedSong):
         """Return decoded string"""
         assert len(song.chords) > 0
 
@@ -100,3 +91,11 @@ class Decoder(format.Decoder):
             decoded_string += song.lyrics[i] + '\n'
 
         return decoded_string
+
+
+format = {
+    'file_endings': ['txt'],
+    'identifier': 'space',
+    'importeur': Importeur(),
+    'exporteur': Exporteur(),
+}

@@ -1,23 +1,37 @@
 #! /bin/python3
 import argparse
 import re
+
+import chord_format
 import format_prochord as prochord
 import format_space as space
 
-formats = {
-    prochord.Format.identifier: prochord.Format(),
-    space.Format.identifier: space.Format(),
-}
+formats = [
+    prochord.format,
+    space.format,
+]
 
-def select_encoder(url):
-    # Returns the encoder of the according class
-    if re.sub('.*\.', '', url) in prochord.Format.file_endings:
-        return formats[prochord.Format.identifier].encoder
-    elif re.sub('.*\.', '', url) in space.Format.file_endings:
-        return formats[space.Format.identifier].encoder
-    else:
-        print('No format found for "{}"'.format(url))
-        exit(1)
+# validate formats
+for f in formats:
+    assert chord_format.valid_format(f), 'Bricked format: {}'.format(f)
+
+
+def select_importeur(url):
+    # Returns the importeur of the according class
+    for f in formats:
+        if re.sub(r'.*\.', '', url) in f['file_endings']:
+            return f['importeur']
+    print('No format found for "{}"'.format(url))
+    exit(1)
+
+
+def select_exporteur(identifier):
+    for f in formats:
+        if f['identifier'] == identifier:
+            return f['exporteur']
+    print('Output format {} not available'.format(identifier))
+    exit(1)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Convert chords between multiple formats')
@@ -30,18 +44,17 @@ def parse_args():
     # * verbosity
     return parser.parse_args()
 
+
 def main():
     args = parse_args()
 
     urls = args.source.split(',')
 
     for url in urls:
-        encoder = select_encoder(url)
-        decoder = formats[args.filetype].decoder
-        song = encoder.encode(url)
-        print(decoder.decode(song))
-
-
+        importeur = select_importeur(url)
+        exporteur = select_exporteur(args.filetype)
+        song = importeur.load(url)
+        print(exporteur.export(song))
 
 
 if __name__ == '__main__':
