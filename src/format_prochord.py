@@ -26,20 +26,30 @@ class Encoder(format.Encoder):
         file = open(url)
         lines = file.readlines()
 
-        encoded_song = song.EncodedSong('Unknown', 'Unknown', url)
+        for i in range(len(lines)):
+            lines[i] = lines[i].replace('\n', '')
 
-        # loop over all lines in file
-        for li in range(len(lines)):
-            line = lines[li]
+        title = 'Unknown'
+        artist = 'Unknown'
+        # Filter comments and metadata
+        for line in lines.copy():
+            if line.startswith('{'):
+                lines.remove(line)
 
             # look for artist and title
             match = re.match(r'\{ ?title *: *(.*)}', line)
             if match:
-                encoded_song.title = match.group(1)
+                title = match.group(1)
             else:
                 match = re.match(r'\{ ?artist *: *(.*)}', line)
                 if match:
-                    encoded_song.artist = match.group(1)
+                    artist = match.group(1)
+
+        encoded_song = song.EncodedSong(title, artist, url)
+
+        # loop over all lines in file
+        for li in range(len(lines)):
+            line = lines[li]
 
             # parse chords while there are start and end marks of chords
             while '[' in line and ']' in line:
@@ -62,6 +72,11 @@ class Decoder(format.Decoder):
     def decode(self, song: song.EncodedSong):
         """Return decoded string"""
         decoded_string = ''
+
+        # insert title and author
+        decoded_string += '{{title: {}}}\n'.format(song.title)
+        decoded_string += '{{artist: {}}}\n'.format(song.artist)
+
         chords = song.chords.copy()
         next_chord_line, next_chord_column, next_chord = chords.pop(0)
         for i in range(len(song.lyrics)):
@@ -81,15 +96,5 @@ class Decoder(format.Decoder):
                     decoded_string += lyric_line[j]
                 else:
                     raise Exception('Line of next chord is before current line! (chord: {}; curr: {})'.format(next_chord_line, i))
+            decoded_string += '\n'
         return decoded_string
-
-if __name__ == '__main__':
-    # @TODO Only for test purposes - remove afterwards
-    encoder = Encoder()
-    decoder = Decoder()
-    song = encoder.encode('/home/jzbor/Programming/Python/PwrCrd/test/example.cho')
-    if song:
-        print(song.chords, song.lyrics)
-        print()
-        print(decoder.decode(song))
-
