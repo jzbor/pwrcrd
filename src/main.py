@@ -1,14 +1,14 @@
 #! /bin/python3
 import argparse
 import chord_format
-import format_prochord as prochord
+import format_chordpro as chordpro
 import format_space as space
 import os
 import re
 import song
 
 formats = [
-    prochord.format,
+    chordpro.format,
     space.format,
 ]
 

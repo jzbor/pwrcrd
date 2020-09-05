@@ -64,7 +64,7 @@ class Importeur(chord_format.Importeur):
         """Return an encoded song."""
         # @TODO Add song title and author
         if not os.path.isfile(url):
-            print('{} is no valid ProChord file'.format(url))
+            print('{} is no valid chordpro file'.format(url))
             return False
         file = open(url)
         lines = file.readlines()
@@ -175,7 +175,7 @@ class Exporteur(chord_format.Exporteur):
 
 format = {
     'file_endings': ['cho', 'crd', 'chopro', 'chord', 'pro'],
-    'identifier': 'prochord',
+    'identifier': 'chordpro',
     'importeur': Importeur(),
     'exporteur': Exporteur(),
 }
