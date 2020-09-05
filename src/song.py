@@ -1,7 +1,24 @@
+from enum import Enum
+
+class MetaType(Enum):
+    # global meta types (whole song)
+    TITLE = 1
+    ARTIST = 2
+    CAPO = 3
+    # local meta types (specific lines)
+    COMMENT = 4
+    CHORUS = 5
+    # VERSE = 6 # not supported yet
+    # BRIDGE = 7 # not supported yet
+    INSERT_CHORUS = 8
+    HIDDEN_COMMENT = 9
+
+
 class Song:
     def __init__(self, title, artist, src_url):
         self.title = title
         self.artist = artist
+        self.capo = None
         self.src_url = src_url
 
     def get_filename(self):
@@ -23,10 +40,13 @@ class ImportedSong(Song):
     """Song in internal python oop format"""
     def __init__(self, title, artist, src_url):
         super().__init__(title, artist, src_url)
-        # Format of chords: (line:int, column:int, chord:str)
+        # format of chords: (line:int, column:int, chord:str)
         self.chords = []
-        # Format of lyrics: (line:str)
+        # format of lyrics: (line:str)
         self.lyrics = []
+        # format of metadata: (line_start: int, line_end: int, type: MetaType, value: str)
+        # start inclusive; end exclusive
+        self.meta = []
 
     def add_chord(self, line:int, column:int, chord:str):
         self.chords.append((line, column, chord))
@@ -37,6 +57,9 @@ class ImportedSong(Song):
         else:
             # May have to initialize list with that size first
             self.lyrics[line_number] = content
+
+    def add_metadata(self, line_start, line_end, metatype, value=''):
+        self.meta.append((line_start, line_end, metatype, value))
 
 
 class ExportedSong(Song):

@@ -20,7 +20,7 @@ for f in formats:
 def save(exported_song, path, args):
     if args.output_path:
         if os.path.isfile(path) and not args.force:
-            print('WARNING: File {} already exists and will NOT be overwritten!')
+            print('WARNING: File {} already exists and will NOT be overwritten!').format(path)
             return False
         elif os.path.isdir(path):
             # create filename of format 'filename.end' or 'filename3.end'
@@ -95,6 +95,8 @@ def main():
         importeur = select_importeur(url)
         export_format = select_format(args.filetype)
         imported_song = importeur.load(url)
+
+        print(imported_song.meta)
 
         exported_song = song.ExportedSong.create(imported_song, export_format)
 
