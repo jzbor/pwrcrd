@@ -96,6 +96,7 @@ def main():
         export_format = select_format(args.filetype)
         imported_song = importeur.load(url)
 
+        print(imported_song)
         print(imported_song.meta)
 
         exported_song = song.ExportedSong.create(imported_song, export_format)

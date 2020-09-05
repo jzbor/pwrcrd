@@ -16,17 +16,18 @@ class Importeur(chord_format.Importeur):
         """Filters out title, artist and metadata and returns all regular lines"""
         chorus_start = 0
         li = 0
-        for line in lines.copy():
-            tags = {
-                r'\{ ?title *: *(.*)}': 'title',
-                r'\{ ?artist *: *(.*)}': 'artist',
-                r'\{ ?capo *: *(.*)}': MetaType.CAPO,
-                r'\{ ?comment *: *(.*)}': MetaType.COMMENT,
-                r' *\# *(.*)': MetaType.HIDDEN_COMMENT,
-                r'\{ ?(start_of_chorus) ?}': MetaType.CHORUS,
-                r'\{ ?(end_of_chorus) ?}': MetaType.CHORUS,
-            }
 
+        # @TODO Fix bug: trailing spaces on title and artist
+        tags = {
+            r'\{ ?title *: *(.*)}': 'title',
+            r'\{ ?artist *: *(.*)}': 'artist',
+            r'\{ ?capo *: *(.*)}': MetaType.CAPO,
+            r'\{ ?comment *: *(.*)}': MetaType.COMMENT,
+            r' *\# *(.*)': MetaType.HIDDEN_COMMENT,
+            r'\{ ?(start_of_chorus) ?}': MetaType.CHORUS,
+            r'\{ ?(end_of_chorus) ?}': MetaType.CHORUS,
+        }
+        for line in lines.copy():
             matched = False
             for regex in tags.keys():
                 match = re.match(regex, line)
@@ -57,6 +58,7 @@ class Importeur(chord_format.Importeur):
                 lines.remove(line)
             else:
                 li += 1
+        return lines
 
     def load(self, url):
         """Return an encoded song."""
@@ -70,8 +72,8 @@ class Importeur(chord_format.Importeur):
         for i in range(len(lines)):
             lines[i] = lines[i].replace('\n', '')
 
-        encoded_song = song.ImportedSong('Unknown', 'Unknown', url)
-        self.parse_metadata(lines, encoded_song)
+        imported_song = song.ImportedSong('Unknown', 'Unknown', url)
+        lines = self.parse_metadata(lines, imported_song)
 
         # loop over all lines in file
         for li in range(len(lines)):
@@ -82,12 +84,12 @@ class Importeur(chord_format.Importeur):
                 index = line.find('[')
                 chord = line[line.find('[') + 1: line.find(']')]
                 chord = self.encode_chord(chord)
-                encoded_song.add_chord(li, index, chord)
+                imported_song.add_chord(li, index, chord)
 
                 # Remove current chord from line
                 line = re.sub(r'\[.*?\]', '', line, count=1)
-            encoded_song.add_lyrics(line)
-        return encoded_song
+            imported_song.add_lyrics(line)
+        return imported_song
 
 
 class Exporteur(chord_format.Exporteur):
@@ -104,10 +106,10 @@ class Exporteur(chord_format.Exporteur):
         insert_table = [] # (line_number, string)
 
         # global metadata
-        insert_table.append((0, '{{ title: {} }}'.format(song.title)))
-        insert_table.append((0, '{{ artist: {} }}'.format(song.artist)))
+        insert_table.append((0.1, '{{ title: {} }}'.format(song.title)))
+        insert_table.append((0.2, '{{ artist: {} }}'.format(song.artist)))
         if song.capo:
-            insert_table.append((0, '{{ capo: {} }}'.format(song.capo)))
+            insert_table.append((0.3, '{{ capo: {} }}'.format(song.capo)))
 
         # insert local metadata
         # comment, hidden comment, soc, eoc
@@ -125,16 +127,16 @@ class Exporteur(chord_format.Exporteur):
         insert_table = sorted(insert_table)
         next_meta = insert_table.pop(0)
         parsed_string = ''
-        i = 0
-        for line in lines:
-            while next_meta[0] <= i:
+        for i in range(len(lines)):
+            while next_meta and next_meta[1] and int(next_meta[0]) <= i:
                 parsed_string += next_meta[1] + '\n'
                 if insert_table:
                     next_meta = insert_table.pop(0)
                 else:
+                    # prevent last item in list form being inserted over and over again
+                    next_meta = (len(lines) // 2 + 1, None)
                     break
-            parsed_string += line + '\n'
-            i += 1
+            parsed_string += '{}\n'.format(lines[i])
         return parsed_string
 
     def export(self, song: song.ImportedSong):
@@ -153,7 +155,8 @@ class Exporteur(chord_format.Exporteur):
                     break
                 elif next_chord_line == i or not chords:
                     # Append chord if necessary
-                    while chords and next_chord_line == i and next_chord_column == j:
+                    while chords and next_chord_line == i \
+                            and (next_chord_column == j or next_chord_column >= len(lyric_line)):
                         decoded_string += '['+next_chord+']'
                         if chords:
                             next_chord_line, next_chord_column, next_chord = chords.pop(0)
@@ -161,6 +164,9 @@ class Exporteur(chord_format.Exporteur):
                     if j < len(lyric_line):
                         decoded_string += lyric_line[j]
                 else:
+                    print(decoded_string)
+                    print(next_chord_line, next_chord_column, next_chord)
+                    print(chords)
                     raise Exception('Line of next chord is before current line! (chord: {}; curr: {})'.format(next_chord_line, i))
             decoded_string += '\n'
 
