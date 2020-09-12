@@ -6,11 +6,18 @@ import format_space as space
 import os
 import re
 import song
+import sys
 
 formats = [
     chordpro.format,
     space.format,
 ]
+
+try:
+    import format_ug as ug
+    formats.append(ug.format)
+except:
+    pass
 
 # validate formats
 for f in formats:
@@ -20,7 +27,7 @@ for f in formats:
 def save(exported_song, path, args):
     if args.output_path:
         if os.path.isfile(path) and not args.force:
-            print('WARNING: File {} already exists and will NOT be overwritten!').format(path)
+            print('WARNING: File {} already exists and will NOT be overwritten!'.format(path))
             return False
         elif os.path.isdir(path):
             # create filename of format 'filename.end' or 'filename3.end'
@@ -67,6 +74,8 @@ def select_importeur(url):
     for f in formats:
         if re.sub(r'.*\.', '', url) in f['file_endings']:
             return f['importeur']
+    if 'format_ug' in sys.modules and re.match(r'.*-[0-9]{7}', url):
+        return ug.format['importeur']
     print('No format found for "{}"'.format(url))
     exit(1)
 
@@ -105,6 +114,9 @@ def main():
             save(exported_song, args.output_path[0], args)
         else:
             print(exported_song.content)
+
+    if 'format_ug' in sys.modules:
+        ug.format['importeur'].driver.close()
 
 
 if __name__ == '__main__':

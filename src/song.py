@@ -54,9 +54,13 @@ class ImportedSong(Song):
     def add_lyrics(self, content:str, line_number:int=-1):
         if line_number == -1:
             self.lyrics.append(content)
-        else:
-            # May have to initialize list with that size first
+        elif line_number < len(self.lyrics):
             self.lyrics[line_number] = content
+        else:
+            for i in range(len(self.lyrics), line_number):
+                self.lyrics.append('')
+            self.lyrics.append(content)
+
 
     def add_metadata(self, line_start, line_end, metatype, value=''):
         self.meta.append((line_start, line_end, metatype, value))
