@@ -156,8 +156,9 @@ class Exporteur(chord_format.Exporteur):
                 elif next_chord_line == i or not chords:
                     # Append chord if necessary
                     while chords and next_chord_line == i \
-                            and (next_chord_column == j or next_chord_column >= len(lyric_line)):
+                            and next_chord_column == j:
                         decoded_string += '['+next_chord+']'
+                        print(decoded_string.split('\n')[-1], j, next_chord_line, next_chord_column, next_chord, next_chord_column == j, j == length - 1, next_chord_column >= length, j, length)
                         if chords:
                             next_chord_line, next_chord_column, next_chord = chords.pop(0)
                     # Append next char from lyrics
@@ -168,6 +169,10 @@ class Exporteur(chord_format.Exporteur):
                     print(next_chord_line, next_chord_column, next_chord)
                     print(chords)
                     raise Exception('Line of next chord is before current line! (chord: {}; curr: {})'.format(next_chord_line, i))
+                while j == length -1 and chords and next_chord_line == i and next_chord_column >= length:
+                    decoded_string += '['+next_chord+']'
+                    if chords:
+                        next_chord_line, next_chord_column, next_chord = chords.pop(0)
             decoded_string += '\n'
 
         return self.insert_metadata(decoded_string.split('\n'), song)
