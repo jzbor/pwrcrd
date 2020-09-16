@@ -158,16 +158,12 @@ class Exporteur(chord_format.Exporteur):
                     while chords and next_chord_line == i \
                             and next_chord_column == j:
                         decoded_string += '['+next_chord+']'
-                        print(decoded_string.split('\n')[-1], j, next_chord_line, next_chord_column, next_chord, next_chord_column == j, j == length - 1, next_chord_column >= length, j, length)
                         if chords:
                             next_chord_line, next_chord_column, next_chord = chords.pop(0)
                     # Append next char from lyrics
                     if j < len(lyric_line):
                         decoded_string += lyric_line[j]
                 else:
-                    print(decoded_string)
-                    print(next_chord_line, next_chord_column, next_chord)
-                    print(chords)
                     raise Exception('Line of next chord is before current line! (chord: {}; curr: {})'.format(next_chord_line, i))
                 while j == length -1 and chords and next_chord_line == i and next_chord_column >= length:
                     decoded_string += '['+next_chord+']'
