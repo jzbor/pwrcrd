@@ -72,7 +72,7 @@ def select_importeur(url):
     for f in formats:
         if re.sub(r'.*\.', '', url) in f['file_endings']:
             return f['importeur']
-    if 'format_ug' in sys.modules and re.match(r'.*-[0-9]{7}', url):
+    if 'format_ug' in sys.modules and re.match(r'.*-[0-9]{5,8}', url):
         return ug.format['importeur']
     print('No format found for "{}"'.format(url))
     exit(1)
