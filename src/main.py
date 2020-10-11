@@ -121,9 +121,6 @@ def main():
         else:
             print(exported_song.content)
 
-    if 'format_ug' in sys.modules:
-        ug.format['importeur'].driver.close()
-
 
 if __name__ == '__main__':
     main()
