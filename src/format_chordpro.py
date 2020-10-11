@@ -110,6 +110,8 @@ class Exporteur(chord_format.Exporteur):
         insert_table.append((0.2, '{{ artist: {} }}'.format(song.artist)))
         if song.capo:
             insert_table.append((0.3, '{{ capo: {} }}'.format(song.capo)))
+        # insert empty line between header and body
+        insert_table.append((0.4, ''))
 
         # insert local metadata
         # comment, hidden comment, soc, eoc
